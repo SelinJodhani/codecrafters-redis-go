@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"net"
@@ -151,7 +152,14 @@ func (rs *RedisServer) HandleConnection(conn *Connection) {
 				ReplicationInfo["master_repl_offset"],
 			)
 			conn.WriteSimpleString(str)
-			conn.WriteRDBFile("")
+
+			emptyRdb, err := hex.DecodeString("524544495330303131fa0972656469732d76657205372e322e30fa0a72656469732d62697473c040fa056374696d65c26d08bc65fa08757365642d6d656dc2b0c41000fa08616f662d62617365c000fff06e3bfec0ff5aa2")
+			if err != nil {
+				conn.WriteSimpleError(fmt.Sprint("Error creating empty rdb file: ", err))
+				return
+			}
+
+			conn.WriteRDBFile(string(emptyRdb))
 
 		default:
 			conn.WriteSimpleError(fmt.Sprintf("unknown command '%s'", command))
